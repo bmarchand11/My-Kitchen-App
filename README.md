@@ -24,8 +24,11 @@ Scan the QR code with your iPhone camera to open the app in [Expo Go](https://ex
 - Add food by typing it in: the picture, section, unit, and expiry date fill themselves in from the name, and you can change any of them
 - Scan a barcode to fill in the name from Open Food Facts; your kitchen remembers products it has scanned before
 - Search for a product by name when a scan can't identify it: suggestions come from your kitchen's past products, everyday foods, and Open Food Facts
+- Scan a receipt: text is read on the phone, shorthand like "GV WHL MLK" is decoded, prices and totals are skipped, and items sold by weight or not recognized are flagged for you to fill in before adding
 
-Receipt scanning and expiration reminders come next.
+Receipt reading uses `expo-text-extractor`, which isn't part of Expo Go, so it needs the app's own build (`npx expo run:ios` or an EAS development build). In Expo Go and on web the receipt screen offers pasting the text instead. The reader lives in `src/lib/receiptReader.ts` and can be swapped for an AI reader later without touching the review screen.
+
+Expiration reminders come next.
 
 ## Code layout
 

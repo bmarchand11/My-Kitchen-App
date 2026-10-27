@@ -16,6 +16,7 @@ const rules: Rule[] = [
   { words: ['frozen pizza', 'frozen meal', 'lasagna', 'burrito', 'dumpling', 'pot pie'], sticker: 'frozenMeal', sectionId: 'freezer-meals', unit: 'box', shelfLifeDays: 150 },
   { words: ['frozen pea', 'frozen corn', 'frozen veg', 'frozen broccoli', 'frozen berr', 'peas'], sticker: 'peas', sectionId: 'freezer-vegetables', unit: 'bag', shelfLifeDays: 240 },
   { words: ['cream cheese'], sticker: 'cheese', sectionId: 'fridge-dairy', unit: 'oz', shelfLifeDays: 21 },
+  { words: ['tortilla chip', 'potato chip', 'corn chip'], sticker: 'chips', sectionId: 'pantry-snacks', unit: 'bag', shelfLifeDays: null },
   { words: ['sour cream'], sticker: 'sourCream', sectionId: 'fridge-dairy', unit: 'tub', shelfLifeDays: 14 },
   { words: ['peanut butter', 'almond butter', 'jam', 'jelly', 'honey', 'nutella', 'salsa', 'pickle', 'olive'], sticker: 'jar', sectionId: 'pantry-snacks', unit: 'jar', shelfLifeDays: null },
   { words: ['butter', 'margarine'], sticker: 'butter', sectionId: 'fridge-dairy', unit: 'sticks', shelfLifeDays: 60 },
@@ -27,7 +28,7 @@ const rules: Rule[] = [
   { words: ['chicken', 'beef', 'steak', 'pork', 'turkey', 'bacon', 'sausage', 'ham', 'salmon', 'fish', 'shrimp', 'meat'], sticker: 'drumstick', sectionId: 'fridge-meats', unit: 'lb', shelfLifeDays: 3 },
   { words: ['juice', 'soda', 'water', 'beer', 'wine', 'lemonade', 'kombucha', 'tea'], sticker: 'juice', sectionId: 'fridge-drinks', unit: 'bottle', shelfLifeDays: 10 },
   { words: ['spinach', 'lettuce', 'kale', 'arugula', 'salad', 'greens', 'cilantro', 'parsley', 'basil leaves'], sticker: 'spinach', sectionId: 'fridge-produce', unit: 'oz', shelfLifeDays: 5 },
-  { words: ['carrot', 'celery', 'pepper', 'broccoli', 'cucumber', 'zucchini', 'tomato', 'onion', 'apple', 'berr', 'grape', 'lemon', 'lime', 'orange', 'fruit', 'vegetable'], sticker: 'carrot', sectionId: 'fridge-produce', unit: 'count', shelfLifeDays: 10 },
+  { words: ['carrot', 'celery', 'pepper', 'broccoli', 'cucumber', 'zucchini', 'tomato', 'onion', 'apple', 'berr', 'grape', 'lemon', 'lime', 'orange', 'fruit', 'vegetable', 'banana', 'avocado', 'potato', 'peach', 'pear', 'melon', 'mango', 'cherr', 'kiwi', 'garlic', 'mushroom', 'squash', 'cabbage', 'cauliflower', 'asparagus', 'corn on'], sticker: 'carrot', sectionId: 'fridge-produce', unit: 'count', shelfLifeDays: 10 },
   { words: ['ketchup', 'mustard', 'mayo', 'dressing', 'sauce', 'sriracha', 'relish'], sticker: 'ketchup', sectionId: 'fridge-condiments', unit: 'bottle', shelfLifeDays: null },
   { words: ['bean', 'soup', 'tuna', 'canned', 'corn', 'tomato sauce', 'broth'], sticker: 'can', sectionId: 'pantry-canned', unit: 'cans', shelfLifeDays: null },
   { words: ['pasta', 'spaghetti', 'noodle', 'macaroni', 'rice', 'quinoa', 'oat', 'cereal', 'bread', 'tortilla'], sticker: 'pasta', sectionId: 'pantry-grains', unit: 'box', shelfLifeDays: null },
@@ -57,7 +58,7 @@ export function guessOrFallback(text: string): Guess {
 }
 
 // Units offered as quick picks in the add form.
-export const commonUnits = ['count', 'lb', 'oz', 'gal', 'bottle', 'bag', 'box', 'jar', 'cans', 'container'];
+export const commonUnits = ['count', 'pack', 'lb', 'oz', 'gal', 'bottle', 'bag', 'box', 'jar', 'cans', 'container'];
 
 // Everyday foods offered as search suggestions before anything is looked up online.
 export const commonFoods = [

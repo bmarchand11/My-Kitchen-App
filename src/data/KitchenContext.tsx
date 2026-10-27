@@ -31,6 +31,7 @@ type KitchenContextValue = {
   removeItem: (id: string) => void;
   addSampleFood: () => Promise<void>;
   addItem: (item: NewItem) => Promise<void>;
+  addItems: (items: NewItem[]) => Promise<void>;
   // What this household saved last time it scanned the barcode, if anything.
   rememberedProduct: (barcode: string) => Promise<RememberedProduct | null>;
   // Products this household has added by barcode before, matched by name.
@@ -175,6 +176,24 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
             unit: item.unit,
           });
         }
+        await load();
+      },
+      addItems: async (newItems) => {
+        if (!householdId || newItems.length === 0) return;
+        const { error: insertError } = await supabase.from('items').insert(
+          newItems.map((item) => ({
+            household_id: householdId,
+            name: item.name.trim(),
+            sticker: item.sticker,
+            section_id: item.sectionId,
+            quantity: item.quantity,
+            unit: item.unit,
+            expires_on: item.expiresOn,
+            barcode: item.barcode ?? null,
+            added_by_name: myName,
+          })),
+        );
+        if (insertError) throw insertError;
         await load();
       },
       rememberedProduct: async (barcode) => {

@@ -32,6 +32,14 @@
           "microphonePermission": false,
           "recordAudioAndroid": false
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "My Kitchen lets you choose a photo of a receipt to add your groceries.",
+          "cameraPermission": "My Kitchen uses the camera to read barcodes and receipts so you don’t have to type them.",
+          "microphonePermission": false
+        }
       ]
     ]
   }

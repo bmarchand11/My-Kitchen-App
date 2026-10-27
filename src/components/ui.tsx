@@ -69,7 +69,7 @@ export function Pill({ label, onPress }: { label: string; onPress: () => void })
   );
 }
 
-export function Field({ label, ref, ...input }: { label: string; ref?: Ref<TextInputInstance> } & TextInputProps) {
+export function Field({ label, ref, style, ...input }: { label: string; ref?: Ref<TextInputInstance> } & TextInputProps) {
   return (
     <View style={{ gap: 4 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -77,7 +77,7 @@ export function Field({ label, ref, ...input }: { label: string; ref?: Ref<TextI
         ref={ref}
         accessibilityLabel={label}
         placeholderTextColor={colors.inkQuiet}
-        style={styles.field}
+        style={[styles.field, style]}
         {...input}
       />
     </View>
