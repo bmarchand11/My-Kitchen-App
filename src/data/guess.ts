@@ -15,6 +15,7 @@ const rules: Rule[] = [
   { words: ['ice cream', 'gelato', 'popsicle', 'sorbet'], sticker: 'iceCream', sectionId: 'freezer-desserts', unit: 'pint', shelfLifeDays: 120 },
   { words: ['frozen pizza', 'frozen meal', 'lasagna', 'burrito', 'dumpling', 'pot pie'], sticker: 'frozenMeal', sectionId: 'freezer-meals', unit: 'box', shelfLifeDays: 150 },
   { words: ['frozen pea', 'frozen corn', 'frozen veg', 'frozen broccoli', 'frozen berr', 'peas'], sticker: 'peas', sectionId: 'freezer-vegetables', unit: 'bag', shelfLifeDays: 240 },
+  { words: ['cream cheese'], sticker: 'cheese', sectionId: 'fridge-dairy', unit: 'oz', shelfLifeDays: 21 },
   { words: ['sour cream'], sticker: 'sourCream', sectionId: 'fridge-dairy', unit: 'tub', shelfLifeDays: 14 },
   { words: ['peanut butter', 'almond butter', 'jam', 'jelly', 'honey', 'nutella', 'salsa', 'pickle', 'olive'], sticker: 'jar', sectionId: 'pantry-snacks', unit: 'jar', shelfLifeDays: null },
   { words: ['butter', 'margarine'], sticker: 'butter', sectionId: 'fridge-dairy', unit: 'sticks', shelfLifeDays: 60 },
@@ -57,3 +58,24 @@ export function guessOrFallback(text: string): Guess {
 
 // Units offered as quick picks in the add form.
 export const commonUnits = ['count', 'lb', 'oz', 'gal', 'bottle', 'bag', 'box', 'jar', 'cans', 'container'];
+
+// Everyday foods offered as search suggestions before anything is looked up online.
+export const commonFoods = [
+  'Milk', 'Eggs', 'Butter', 'Cheddar cheese', 'Shredded mozzarella', 'Greek yogurt', 'Sour cream', 'Cream cheese',
+  'Half and half', 'Chicken breasts', 'Chicken thighs', 'Ground beef', 'Steak', 'Pork chops', 'Bacon', 'Sausage',
+  'Deli turkey', 'Ham', 'Salmon', 'Shrimp', 'Leftovers', 'Orange juice', 'Apple juice', 'Sparkling water', 'Beer',
+  'White wine', 'Spinach', 'Lettuce', 'Kale', 'Carrots', 'Celery', 'Bell peppers', 'Broccoli', 'Cucumber',
+  'Tomatoes', 'Onions', 'Apples', 'Strawberries', 'Blueberries', 'Grapes', 'Lemons', 'Limes', 'Cilantro',
+  'Ketchup', 'Mustard', 'Mayo', 'Ranch dressing', 'Hot sauce', 'Frozen peas', 'Frozen corn', 'Frozen broccoli',
+  'Frozen berries', 'Frozen pizza', 'Ice cream', 'Black beans', 'Chicken broth', 'Canned tomatoes', 'Tuna',
+  'Spaghetti', 'Rice', 'Oats', 'Cereal', 'Bread', 'Tortillas', 'Chips', 'Crackers', 'Peanut butter', 'Jam',
+  'Honey', 'Flour', 'Sugar', 'Brown sugar', 'Baking soda', 'Salt', 'Black pepper', 'Cinnamon', 'Garlic powder',
+];
+
+export function matchCommonFoods(query: string, limit = 4): string[] {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const starts = commonFoods.filter((f) => f.toLowerCase().startsWith(q));
+  const contains = commonFoods.filter((f) => !f.toLowerCase().startsWith(q) && f.toLowerCase().includes(q));
+  return [...starts, ...contains].slice(0, limit);
+}

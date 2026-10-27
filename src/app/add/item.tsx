@@ -3,6 +3,7 @@ import { useRef, useState, type ReactNode } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View, type TextInputInstance } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
+import { ProductSearch, type Suggestion } from '../../components/ProductSearch';
 import { isStickerName, Sticker, stickerNames, type StickerName } from '../../components/Sticker';
 import { BackButton, Button, ChoiceChip, CloseButton, ErrorNote, Field, Screen, Title } from '../../components/ui';
 import { commonUnits, guessFromName, guessOrFallback } from '../../data/guess';
@@ -94,6 +95,8 @@ export default function AddItemScreen() {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const nameInput = useRef<TextInputInstance>(null);
+  // Suggestions show while someone is typing a name and hide once they pick one.
+  const [suggesting, setSuggesting] = useState(false);
 
   const section = sectionById(draft.sectionId);
   const locationId: LocationId = section?.locationId ?? 'fridge';
@@ -102,7 +105,20 @@ export default function AddItemScreen() {
 
   const update = (changes: Partial<Draft>) => setDraft((d) => ({ ...d, ...changes }));
 
+  const pickSuggestion = (s: Suggestion) => {
+    setSuggesting(false);
+    setDraft((d) => ({
+      ...d,
+      name: s.name,
+      sticker: picked.sticker ? d.sticker : s.sticker,
+      sectionId: picked.section ? d.sectionId : s.sectionId,
+      unit: picked.unit ? d.unit : s.unit,
+      expiresOn: picked.expiry ? d.expiresOn : s.shelfLifeDays === null ? null : daysFromToday(s.shelfLifeDays),
+    }));
+  };
+
   const changeName = (name: string) => {
+    setSuggesting(true);
     const guess = guessFromName(name);
     setDraft((d) => {
       if (!guess) return { ...d, name };
@@ -155,6 +171,7 @@ export default function AddItemScreen() {
       }
       setSaved(`Added ${draft.name.trim()} to ${section?.name ?? 'your kitchen'}. Add another, or close when you’re done.`);
       setDraft(initialDraft({}));
+      setSuggesting(false);
       setPicked({ sticker: false, section: false, unit: false, expiry: false });
       nameInput.current?.focus();
     } catch (e) {
@@ -174,13 +191,13 @@ export default function AddItemScreen() {
             <BackButton label="Add food" />
             <CloseButton />
           </View>
-          <Title>{barcode ? 'Check it over' : 'Type it in'}</Title>
+          <Title>{barcode ? 'Check it over' : 'Search or type it in'}</Title>
 
           {saved && <Text style={styles.saved}>{saved}</Text>}
           {params.unknown && (
             <Text style={styles.unknown}>
-              We didn’t recognize that barcode. Type the name once and we’ll remember it next time anyone in your
-              kitchen scans it.
+              We didn’t recognize that barcode. Search for the product or type its name, and we’ll remember it next time
+              anyone in your kitchen scans it.
             </Text>
           )}
 
@@ -192,7 +209,7 @@ export default function AddItemScreen() {
                 label="What is it?"
                 value={draft.name}
                 onChangeText={changeName}
-                placeholder="Milk, chicken, spinach…"
+                placeholder="Search or type: milk, Cheerios…"
                 autoFocus={!params.name}
                 autoCapitalize="sentences"
                 returnKeyType="done"
@@ -200,6 +217,8 @@ export default function AddItemScreen() {
               />
             </View>
           </View>
+
+          {suggesting && <ProductSearch query={draft.name} onPick={pickSuggestion} />}
 
           <Group label="Picture">
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.stickerRow}>
