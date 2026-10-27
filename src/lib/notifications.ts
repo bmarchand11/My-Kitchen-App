@@ -2,12 +2,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-import { defaultReminderSettings, type Digest, type ReminderSettings } from '../data/reminders';
+import { defaultReminderSettings, type Digest, type ItemReminder, type ReminderSettings } from '../data/reminders';
 
 // Reminders are local notifications scheduled on this phone from the kitchen's current food.
 // They're rebuilt whenever the food changes, so each phone keeps its own up-to-date schedule.
 
 const SETTINGS_KEY = 'reminder-settings';
+const ITEM_REMINDERS_KEY = 'item-reminders';
 const supported = Platform.OS !== 'web';
 
 if (supported) {
@@ -34,6 +35,21 @@ export async function saveReminderSettings(settings: ReminderSettings): Promise<
   await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
 
+export async function loadItemReminders(): Promise<ItemReminder[]> {
+  try {
+    const raw = await AsyncStorage.getItem(ITEM_REMINDERS_KEY);
+    return raw ? (JSON.parse(raw) as ItemReminder[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function saveItemReminders(reminders: ItemReminder[]): Promise<void> {
+  await AsyncStorage.setItem(ITEM_REMINDERS_KEY, JSON.stringify(reminders));
+}
+
+export type ScheduledNote = { date: Date; title: string; body: string; url: string };
+
 export type PermissionState = 'granted' | 'undetermined' | 'denied' | 'unsupported';
 
 export async function reminderPermission(): Promise<PermissionState> {
@@ -50,14 +66,18 @@ export async function askReminderPermission(): Promise<PermissionState> {
   return status === 'granted' ? 'granted' : status === 'denied' ? 'denied' : 'undetermined';
 }
 
-export async function scheduleReminders(digests: Digest[]): Promise<void> {
+export async function scheduleReminders(notes: ScheduledNote[]): Promise<void> {
   if (!supported) return;
   await Notifications.cancelAllScheduledNotificationsAsync();
-  if (digests.length === 0 || (await reminderPermission()) !== 'granted') return;
-  for (const d of digests) {
+  if (notes.length === 0 || (await reminderPermission()) !== 'granted') return;
+  for (const n of notes) {
     await Notifications.scheduleNotificationAsync({
-      content: { title: d.title, body: d.body, data: { url: '/list' } },
-      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: d.date },
+      content: { title: n.title, body: n.body, data: { url: n.url } },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: n.date },
     });
   }
+}
+
+export function digestNotes(digests: Digest[]): ScheduledNote[] {
+  return digests.map((d) => ({ ...d, url: '/list' }));
 }

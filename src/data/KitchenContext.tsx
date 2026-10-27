@@ -30,8 +30,9 @@ type KitchenContextValue = {
   setQuantity: (id: string, quantity: number) => void;
   removeItem: (id: string) => void;
   addSampleFood: () => Promise<void>;
-  addItem: (item: NewItem) => Promise<void>;
-  addItems: (items: NewItem[]) => Promise<void>;
+  // Both return the new items' ids, so a reminder can be attached to them.
+  addItem: (item: NewItem) => Promise<string | null>;
+  addItems: (items: NewItem[]) => Promise<string[]>;
   // What this household saved last time it scanned the barcode, if anything.
   rememberedProduct: (barcode: string) => Promise<RememberedProduct | null>;
   // Products this household has added by barcode before, matched by name.
@@ -152,8 +153,8 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
         await load();
       },
       addItem: async (item) => {
-        if (!householdId) return;
-        const { error: insertError } = await supabase.from('items').insert({
+        if (!householdId) return null;
+        const { data: inserted, error: insertError } = await supabase.from('items').insert({
           household_id: householdId,
           name: item.name.trim(),
           sticker: item.sticker,
@@ -163,7 +164,7 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
           expires_on: item.expiresOn,
           barcode: item.barcode ?? null,
           added_by_name: myName,
-        });
+        }).select('id').single();
         if (insertError) throw insertError;
         if (item.barcode) {
           // Best effort: a failure here only means the next scan won't fill itself in.
@@ -177,10 +178,11 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
           });
         }
         await load();
+        return inserted.id;
       },
       addItems: async (newItems) => {
-        if (!householdId || newItems.length === 0) return;
-        const { error: insertError } = await supabase.from('items').insert(
+        if (!householdId || newItems.length === 0) return [];
+        const { data: inserted, error: insertError } = await supabase.from('items').insert(
           newItems.map((item) => ({
             household_id: householdId,
             name: item.name.trim(),
@@ -192,9 +194,11 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
             barcode: item.barcode ?? null,
             added_by_name: myName,
           })),
-        );
+        ).select('id');
         if (insertError) throw insertError;
         await load();
+        // Rows come back in the order they were sent.
+        return inserted.map((r) => r.id);
       },
       rememberedProduct: async (barcode) => {
         if (!householdId) return null;

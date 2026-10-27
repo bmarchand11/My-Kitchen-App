@@ -10,6 +10,7 @@ import { freshness, type Item, type LocationId } from '../data/kitchen';
 import { useKitchen } from '../data/KitchenContext';
 import { useReminders } from '../data/RemindersContext';
 import { useSession } from '../data/SessionContext';
+import { errorMessage } from '../lib/errors';
 import { colors, fonts } from '../theme';
 
 function greeting(now = new Date()): string {
@@ -66,7 +67,7 @@ export default function KitchenHome() {
     try {
       await addSampleFood();
     } catch (e) {
-      setAddError(e instanceof Error ? e.message : String(e));
+      setAddError(errorMessage(e));
     } finally {
       setAdding(false);
     }

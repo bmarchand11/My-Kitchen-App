@@ -4,6 +4,7 @@ import { Alert, Platform, ScrollView, Share, StyleSheet, Text, View } from 'reac
 import { ReminderSettingsCard } from '../components/ReminderSettingsCard';
 import { Button, ErrorNote, Screen, Title } from '../components/ui';
 import { useSession } from '../data/SessionContext';
+import { errorMessage } from '../lib/errors';
 import { colors, fonts } from '../theme';
 
 const AVATAR_COLORS = [colors.sunflower, '#9FD3F5', '#FFB3C7', '#BFE3D0', '#E9B872'];
@@ -68,7 +69,7 @@ export default function HouseholdScreen() {
           variant="secondary"
           onPress={() =>
             confirm(`Leave ${household.name}? You'll need the invite code to come back.`, () =>
-              leaveHousehold().catch((e) => setError(e instanceof Error ? e.message : String(e))),
+              leaveHousehold().catch((e) => setError(errorMessage(e))),
             )
           }
         />

@@ -5,12 +5,15 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, 
 import Svg, { Path } from 'react-native-svg';
 
 import { ProductSearch, type Suggestion } from '../../components/ProductSearch';
+import { ReminderOffer, reminderOffers } from '../../components/ReminderOffer';
 import { Sticker, type StickerName } from '../../components/Sticker';
 import { BackButton, Button, ChoiceChip, CloseButton, ErrorNote, Field, Screen, Title } from '../../components/ui';
 import { commonUnits, guessFromName } from '../../data/guess';
 import { daysFromToday, formatQuantity, locations, quantityStep, sectionById, sections } from '../../data/kitchen';
 import { useKitchen } from '../../data/KitchenContext';
+import { useReminders } from '../../data/RemindersContext';
 import { parseReceipt } from '../../data/receipt';
+import { errorMessage } from '../../lib/errors';
 import { canReadReceipts, readReceipt } from '../../lib/receiptReader';
 import { colors, fonts } from '../../theme';
 
@@ -167,6 +170,8 @@ function RoundButton({ label, icon, onPress }: { label: string; icon: 'minus' | 
 
 export default function ReceiptScreen() {
   const { addItems } = useKitchen();
+  const { settings: reminderSettings } = useReminders();
+  const [offers, setOffers] = useState<ReturnType<typeof reminderOffers> | null>(null);
   const [rows, setRows] = useState<Row[] | null>(null);
   const [reading, setReading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -201,7 +206,7 @@ export default function ReceiptScreen() {
       setReading(true);
       addRows(await readReceipt(result.assets[0].uri));
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errorMessage(e));
     } finally {
       setReading(false);
     }
@@ -226,21 +231,25 @@ export default function ReceiptScreen() {
     }
     setSaving(true);
     try {
-      await addItems(
-        rows
-          .filter((r) => r.name.trim())
-          .map((r) => ({
-            name: r.name,
-            sticker: r.sticker,
-            sectionId: r.sectionId,
-            quantity: r.quantity,
-            unit: r.unit,
-            expiresOn: r.shelfLifeDays === null ? null : daysFromToday(r.shelfLifeDays),
-          })),
+      const newItems = rows
+        .filter((r) => r.name.trim())
+        .map((r) => ({
+          name: r.name,
+          sticker: r.sticker,
+          sectionId: r.sectionId,
+          quantity: r.quantity,
+          unit: r.unit,
+          expiresOn: r.shelfLifeDays === null ? null : daysFromToday(r.shelfLifeDays),
+        }));
+      const ids = await addItems(newItems);
+      const quick = reminderOffers(
+        ids.map((itemId, i) => ({ itemId, name: newItems[i].name, sticker: newItems[i].sticker, expiresOn: newItems[i].expiresOn })),
+        reminderSettings.hour,
       );
-      router.dismissTo('/');
+      if (quick.length > 0) setOffers(quick);
+      else router.dismissTo('/');
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errorMessage(e));
     } finally {
       setSaving(false);
     }
@@ -343,6 +352,7 @@ export default function ReceiptScreen() {
           />
         )}
       </ScrollView>
+      {offers && <ReminderOffer offers={offers} onDone={() => router.dismissTo('/')} />}
     </Screen>
   );
 }
