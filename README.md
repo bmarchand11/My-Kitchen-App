@@ -18,14 +18,19 @@ Scan the QR code with your iPhone camera to open the app in [Expo Go](https://ex
 - Tap a section to zoom in on its food as sticker pictures, or switch to a list
 - Item detail with + and − to change how much is left, plus "used it up" and "threw it out"
 - A searchable list of everything, filterable by location, with food to use soon at the top
+- Accounts (email and password) and households: start a kitchen, then share its 6-character invite code so others can join
+- Food is saved in Supabase and syncs live between everyone in the household
+- A new kitchen starts empty, with a button to load sample food
 
-The food is sample data held in memory, so changes reset when the app restarts. Accounts, household sharing, and adding food come next.
+Adding your own food (typing, barcode, receipt) and expiration reminders come next.
 
 ## Code layout
 
 - `src/app/` holds the screens (Expo Router: every file is a screen)
 - `src/components/` holds shared pieces like the sticker pictures and bottom bar
-- `src/data/` holds the kitchen data model and sample food
+- `src/data/` holds the kitchen data model, sample food, and the session and kitchen state
+- `src/lib/` holds the Supabase client and its generated database types
+- `supabase/migrations/` holds the database tables and security rules (already applied to the live project)
 
 ## Checks
 

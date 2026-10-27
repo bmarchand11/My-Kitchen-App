@@ -122,7 +122,7 @@ export function locationById(id: string): Location | undefined {
   return locations.find((l) => l.id === id);
 }
 
-// Sample food so the app has something to show until accounts and real data arrive.
+// Sample food a new household can load to try the app before adding its own.
 export function sampleItems(today = new Date()): Item[] {
   const added = daysFromToday(-3, today);
   const item = (

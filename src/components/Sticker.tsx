@@ -157,6 +157,10 @@ const art = {
 
 export type StickerName = keyof typeof art;
 
+export function isStickerName(value: string): value is StickerName {
+  return value in art;
+}
+
 type StickerProps = {
   name: StickerName;
   size?: number;
