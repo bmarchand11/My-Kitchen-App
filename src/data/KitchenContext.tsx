@@ -33,6 +33,8 @@ type KitchenContextValue = {
   addItem: (item: NewItem) => Promise<void>;
   // What this household saved last time it scanned the barcode, if anything.
   rememberedProduct: (barcode: string) => Promise<RememberedProduct | null>;
+  // Products this household has added by barcode before, matched by name.
+  searchRememberedProducts: (query: string) => Promise<(RememberedProduct & { barcode: string })[]>;
 };
 
 const KitchenContext = createContext<KitchenContextValue | null>(null);
@@ -184,6 +186,24 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
           .eq('barcode', barcode)
           .maybeSingle();
         return data ? { name: data.name, sticker: data.sticker, sectionId: data.section_id, unit: data.unit } : null;
+      },
+      searchRememberedProducts: async (query) => {
+        const q = query.trim().replace(/[%_\\,()]/g, ' ');
+        if (!householdId || q.length < 2) return [];
+        const { data } = await supabase
+          .from('household_products')
+          .select('barcode, name, sticker, section_id, unit')
+          .eq('household_id', householdId)
+          .ilike('name', `%${q}%`)
+          .order('updated_at', { ascending: false })
+          .limit(4);
+        return (data ?? []).map((p) => ({
+          barcode: p.barcode,
+          name: p.name,
+          sticker: p.sticker,
+          sectionId: p.section_id,
+          unit: p.unit,
+        }));
       },
     }),
     [loading, error, items, householdId, myName, load],

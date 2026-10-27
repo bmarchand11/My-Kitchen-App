@@ -23,6 +23,7 @@ Scan the QR code with your iPhone camera to open the app in [Expo Go](https://ex
 - A new kitchen starts empty, with a button to load sample food
 - Add food by typing it in: the picture, section, unit, and expiry date fill themselves in from the name, and you can change any of them
 - Scan a barcode to fill in the name from Open Food Facts; your kitchen remembers products it has scanned before
+- Search for a product by name when a scan can't identify it: suggestions come from your kitchen's past products, everyday foods, and Open Food Facts
 
 Receipt scanning and expiration reminders come next.
 
