@@ -8,6 +8,18 @@ import { useSession } from './SessionContext';
 
 type ItemRow = Database['public']['Tables']['items']['Row'];
 
+export type NewItem = {
+  name: string;
+  sticker: string;
+  sectionId: string;
+  quantity: number;
+  unit: string;
+  expiresOn: string | null;
+  barcode?: string | null;
+};
+
+export type RememberedProduct = { name: string; sticker: string; sectionId: string; unit: string };
+
 type KitchenContextValue = {
   loading: boolean;
   error: string | null;
@@ -18,6 +30,9 @@ type KitchenContextValue = {
   setQuantity: (id: string, quantity: number) => void;
   removeItem: (id: string) => void;
   addSampleFood: () => Promise<void>;
+  addItem: (item: NewItem) => Promise<void>;
+  // What this household saved last time it scanned the barcode, if anything.
+  rememberedProduct: (barcode: string) => Promise<RememberedProduct | null>;
 };
 
 const KitchenContext = createContext<KitchenContextValue | null>(null);
@@ -132,6 +147,43 @@ export function KitchenProvider({ children }: { children: ReactNode }) {
         const { error: insertError } = await supabase.from('items').insert(rows);
         if (insertError) throw insertError;
         await load();
+      },
+      addItem: async (item) => {
+        if (!householdId) return;
+        const { error: insertError } = await supabase.from('items').insert({
+          household_id: householdId,
+          name: item.name.trim(),
+          sticker: item.sticker,
+          section_id: item.sectionId,
+          quantity: item.quantity,
+          unit: item.unit,
+          expires_on: item.expiresOn,
+          barcode: item.barcode ?? null,
+          added_by_name: myName,
+        });
+        if (insertError) throw insertError;
+        if (item.barcode) {
+          // Best effort: a failure here only means the next scan won't fill itself in.
+          await supabase.from('household_products').upsert({
+            household_id: householdId,
+            barcode: item.barcode,
+            name: item.name.trim(),
+            sticker: item.sticker,
+            section_id: item.sectionId,
+            unit: item.unit,
+          });
+        }
+        await load();
+      },
+      rememberedProduct: async (barcode) => {
+        if (!householdId) return null;
+        const { data } = await supabase
+          .from('household_products')
+          .select('name, sticker, section_id, unit')
+          .eq('household_id', householdId)
+          .eq('barcode', barcode)
+          .maybeSingle();
+        return data ? { name: data.name, sticker: data.sticker, sectionId: data.section_id, unit: data.unit } : null;
       },
     }),
     [loading, error, items, householdId, myName, load],

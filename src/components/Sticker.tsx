@@ -157,6 +157,8 @@ const art = {
 
 export type StickerName = keyof typeof art;
 
+export const stickerNames = Object.keys(art) as StickerName[];
+
 export function isStickerName(value: string): value is StickerName {
   return value in art;
 }

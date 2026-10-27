@@ -24,7 +24,15 @@
     "scheme": "mykitchen",
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "My Kitchen uses the camera to read barcodes and receipts so you don’t have to type them.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
     ]
   }
 }

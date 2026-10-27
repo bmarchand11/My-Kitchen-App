@@ -21,8 +21,10 @@ Scan the QR code with your iPhone camera to open the app in [Expo Go](https://ex
 - Accounts (email and password) and households: start a kitchen, then share its 6-character invite code so others can join
 - Food is saved in Supabase and syncs live between everyone in the household
 - A new kitchen starts empty, with a button to load sample food
+- Add food by typing it in: the picture, section, unit, and expiry date fill themselves in from the name, and you can change any of them
+- Scan a barcode to fill in the name from Open Food Facts; your kitchen remembers products it has scanned before
 
-Adding your own food (typing, barcode, receipt) and expiration reminders come next.
+Receipt scanning and expiration reminders come next.
 
 ## Code layout
 

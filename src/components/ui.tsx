@@ -1,5 +1,5 @@
 import { router, type Href } from 'expo-router';
-import type { ReactNode } from 'react';
+import type { ReactNode, Ref } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -8,6 +8,7 @@ import {
   TextInput,
   View,
   type StyleProp,
+  type TextInputInstance,
   type TextInputProps,
   type ViewStyle,
 } from 'react-native';
@@ -68,11 +69,12 @@ export function Pill({ label, onPress }: { label: string; onPress: () => void })
   );
 }
 
-export function Field({ label, ...input }: { label: string } & TextInputProps) {
+export function Field({ label, ref, ...input }: { label: string; ref?: Ref<TextInputInstance> } & TextInputProps) {
   return (
     <View style={{ gap: 4 }}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <TextInput
+        ref={ref}
         accessibilityLabel={label}
         placeholderTextColor={colors.inkQuiet}
         style={styles.field}
@@ -111,6 +113,30 @@ export function Button({
       ) : (
         <Text style={[styles.buttonText, { color: primary ? colors.surface : colors.ink }]}>{label}</Text>
       )}
+    </Pressable>
+  );
+}
+
+// Closes the add-food sheet from any screen inside it.
+export function CloseButton() {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.dismissTo('/')} style={styles.close}>
+      <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
+        <Path d="M6 6l12 12M18 6L6 18" stroke={colors.ink} strokeWidth={2.6} strokeLinecap="round" />
+      </Svg>
+    </Pressable>
+  );
+}
+
+export function ChoiceChip({ label, selected, onPress }: { label: string; selected: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      style={[styles.choiceChip, selected && { backgroundColor: colors.ink }]}
+    >
+      <Text style={[styles.choiceChipText, selected && { color: colors.surface }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -285,5 +311,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: -24,
+  },
+  choiceChip: {
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    minHeight: 36,
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  choiceChipText: { fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.ink },
+  close: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

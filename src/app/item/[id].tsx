@@ -11,18 +11,11 @@ import {
   formatQuantity,
   freshness,
   locationById,
+  quantityStep,
   sectionById,
-  type Item,
 } from '../../data/kitchen';
 import { useKitchen } from '../../data/KitchenContext';
 import { colors, fonts } from '../../theme';
-
-// Units people usually use up a bit at a time step by quarters; everything else by whole numbers.
-const FRACTIONAL_UNITS = new Set(['gal', 'lb', 'bag', 'container', 'tub', 'jar', 'bottle', 'box', 'pint']);
-
-function stepFor(item: Item): number {
-  return FRACTIONAL_UNITS.has(item.unit) ? 0.25 : 1;
-}
 
 function Row({ label, children, last }: { label: string; children: ReactNode; last?: boolean }) {
   return (
@@ -50,7 +43,7 @@ export default function ItemScreen() {
   const section = sectionById(item.sectionId);
   const place = section && locationById(section.locationId);
   const fresh = freshness(item);
-  const step = stepFor(item);
+  const step = quantityStep(item.unit);
 
   const finish = () => {
     removeItem(item.id);
