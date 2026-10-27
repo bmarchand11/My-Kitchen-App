@@ -3,6 +3,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 
 import { Button, ErrorNote, Field, Screen, Title } from '../components/ui';
 import { useSession } from '../data/SessionContext';
+import { errorMessage } from '../lib/errors';
 import { colors, fonts } from '../theme';
 
 type Choice = 'create' | 'join';
@@ -35,7 +36,7 @@ export default function HouseholdSetupScreen() {
       if (choice === 'create') await createHousehold(householdName, myName);
       else await joinHousehold(code, myName);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errorMessage(e));
     } finally {
       setBusy(false);
     }

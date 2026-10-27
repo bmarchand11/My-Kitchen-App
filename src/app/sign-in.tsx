@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { Sticker } from '../components/Sticker';
 import { Button, ErrorNote, Field, Screen, Title } from '../components/ui';
 import { useSession } from '../data/SessionContext';
+import { errorMessage } from '../lib/errors';
 import { colors, fonts } from '../theme';
 
 type Mode = 'signIn' | 'signUp';
@@ -44,7 +45,7 @@ export default function SignInScreen() {
         }
       }
     } catch (e) {
-      setError(friendly(e instanceof Error ? e.message : String(e)));
+      setError(friendly(errorMessage(e)));
     } finally {
       setBusy(false);
     }

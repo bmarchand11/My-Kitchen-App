@@ -4,6 +4,7 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import Svg, { Path } from 'react-native-svg';
 
 import { ProductSearch, type Suggestion } from '../../components/ProductSearch';
+import { ReminderOffer, reminderOffers } from '../../components/ReminderOffer';
 import { isStickerName, Sticker, stickerNames, type StickerName } from '../../components/Sticker';
 import { BackButton, Button, ChoiceChip, CloseButton, ErrorNote, Field, Screen, Title } from '../../components/ui';
 import { commonUnits, guessFromName, guessOrFallback } from '../../data/guess';
@@ -19,6 +20,8 @@ import {
   type LocationId,
 } from '../../data/kitchen';
 import { useKitchen } from '../../data/KitchenContext';
+import { useReminders } from '../../data/RemindersContext';
+import { errorMessage } from '../../lib/errors';
 import { colors, fonts } from '../../theme';
 
 const expiryPresets: { label: string; days: number | null }[] = [
@@ -88,6 +91,9 @@ export default function AddItemScreen() {
   const params = useLocalSearchParams<Params>();
   const barcode = params.barcode || null;
   const { addItem } = useKitchen();
+  const { settings: reminderSettings } = useReminders();
+  // After adding quick-spoiling food, offer a reminder, then carry on (back to the scanner, or ready for the next item).
+  const [offer, setOffer] = useState<{ offers: ReturnType<typeof reminderOffers>; then: () => void } | null>(null);
   const [draft, setDraft] = useState<Draft>(() => initialDraft(params));
   // Once someone picks a picture, section, unit, or date by hand, typing the name stops changing it.
   const [picked, setPicked] = useState({ sticker: false, section: false, unit: false, expiry: false });
@@ -163,19 +169,24 @@ export default function AddItemScreen() {
     }
     setBusy(true);
     try {
-      await addItem({ ...draft, barcode });
+      const id = await addItem({ ...draft, barcode });
+      const offers = id
+        ? reminderOffers([{ itemId: id, name: draft.name.trim(), sticker: draft.sticker, expiresOn: draft.expiresOn }], reminderSettings.hour)
+        : [];
       if (barcode) {
         // Back to the scanner, ready for the next product.
-        router.back();
+        if (offers.length > 0) setOffer({ offers, then: () => router.back() });
+        else router.back();
         return;
       }
+      if (offers.length > 0) setOffer({ offers, then: () => nameInput.current?.focus() });
       setSaved(`Added ${draft.name.trim()} to ${section?.name ?? 'your kitchen'}. Add another, or close when you’re done.`);
       setDraft(initialDraft({}));
       setSuggesting(false);
       setPicked({ sticker: false, section: false, unit: false, expiry: false });
-      nameInput.current?.focus();
+      if (offers.length === 0) nameInput.current?.focus();
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(errorMessage(e));
     } finally {
       setBusy(false);
     }
@@ -345,6 +356,16 @@ export default function AddItemScreen() {
           <Button label={`Add to ${section?.name ?? 'kitchen'}`} onPress={save} busy={busy} />
         </ScrollView>
       </KeyboardAvoidingView>
+      {offer && (
+        <ReminderOffer
+          offers={offer.offers}
+          onDone={() => {
+            const then = offer.then;
+            setOffer(null);
+            then();
+          }}
+        />
+      )}
     </Screen>
   );
 }

@@ -29,6 +29,8 @@ Scan the QR code with your iPhone camera to open the app in [Expo Go](https://ex
 Receipt reading uses `expo-text-extractor`, which isn't part of Expo Go, so it needs the app's own build (`npx expo run:ios` or an EAS development build). In Expo Go and on web the receipt screen offers pasting the text instead. The reader lives in `src/lib/receiptReader.ts` and can be swapped for an AI reader later without touching the review screen.
 - Expiration reminders: a daily notification (8 AM, noon, 5 PM, or 8 PM) listing food that goes off within 3 days, set on the household screen. The kitchen screen offers to turn them on once there's food with dates
 
+- Adding food that goes off within a week (typed, scanned, or from a receipt) offers a reminder for it the day before it goes bad
+
 Reminders are local notifications scheduled on each phone for the next 14 days, rebuilt whenever the kitchen's food changes, so a phone that hasn't opened the app picks up other members' changes the next time it does.
 
 ## Code layout

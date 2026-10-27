@@ -67,3 +67,38 @@ export function buildDigests(items: Item[], settings: ReminderSettings, now = ne
   }
   return digests;
 }
+
+// Food that goes off within this many days gets offered its own reminder when it's added.
+export const QUICK_SPOIL_DAYS = 7;
+
+export type ItemReminder = { itemId: string; name: string; at: string };
+
+// The recommended reminder: the day before it goes off, at the person's reminder time.
+// Falls back to the morning it goes off when the day before has already passed.
+export function recommendedReminder(expiresOn: string | null, hour: number, now = new Date()): Date | null {
+  if (!expiresOn) return null;
+  const days = daysUntil(expiresOn, now);
+  if (days < 0 || days > QUICK_SPOIL_DAYS) return null;
+  const dayBefore = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days - 1, hour, 0, 0);
+  if (dayBefore.getTime() > now.getTime()) return dayBefore;
+  const morningOf = new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, Math.min(hour, 9), 0, 0);
+  return morningOf.getTime() > now.getTime() ? morningOf : null;
+}
+
+export function describeReminder(at: Date, now = new Date(), short = false): string {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const day = new Date(at.getFullYear(), at.getMonth(), at.getDate()).getTime();
+  const diff = Math.round((day - today) / (24 * 60 * 60 * 1000));
+  const time = at.toLocaleTimeString('en-US', { hour: 'numeric', minute: at.getMinutes() ? '2-digit' : undefined });
+  const dayText =
+    diff === 0 ? 'today' : diff === 1 ? 'tomorrow' : at.toLocaleDateString('en-US', { weekday: short ? 'short' : 'long', month: 'short', day: 'numeric' });
+  return `${dayText} at ${time}`;
+}
+
+export function itemReminderText(name: string, at: Date, expiresOn: string): { title: string; body: string } {
+  const days = daysUntil(expiresOn, at);
+  return {
+    title: `Use your ${name.toLowerCase()} ${days <= 0 ? 'today' : 'by tomorrow'}`,
+    body: days <= 0 ? 'It goes off today.' : 'It goes off tomorrow. Tap to see it in your kitchen.',
+  };
+}
