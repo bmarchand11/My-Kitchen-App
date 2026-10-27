@@ -11,7 +11,7 @@ type Option = { title: string; detail: string; tint: string; sticker: StickerNam
 const options: Option[] = [
   { title: 'Scan a barcode', detail: 'One product, added in a second', tint: '#9FD3F5', sticker: 'can', href: '/add/scan' },
   { title: 'Search or type it in', detail: 'Find a product, or type any food', tint: '#FFB3C7', sticker: 'carrot', href: '/add/item' },
-  { title: 'Scan a receipt', detail: 'Adds a whole grocery trip at once', tint: colors.sunflower, sticker: 'milk', href: null },
+  { title: 'Scan a receipt', detail: 'Adds a whole grocery trip at once', tint: colors.sunflower, sticker: 'milk', href: '/add/receipt' },
 ];
 
 export default function AddScreen() {
