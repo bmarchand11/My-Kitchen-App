@@ -1,5 +1,6 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
@@ -7,6 +8,7 @@ import { Sticker, type StickerName } from '../components/Sticker';
 import { Button, ErrorNote, Screen, Title } from '../components/ui';
 import { freshness, type Item, type LocationId } from '../data/kitchen';
 import { useKitchen } from '../data/KitchenContext';
+import { useReminders } from '../data/RemindersContext';
 import { useSession } from '../data/SessionContext';
 import { colors, fonts } from '../theme';
 
@@ -21,6 +23,8 @@ function previewStickers(items: Item[], count: number): StickerName[] {
   return [...new Set(items.map((i) => i.sticker))].slice(0, count);
 }
 
+const PROMPT_KEY = 'reminder-prompt-dismissed';
+
 const AVATAR_COLORS = [colors.sunflower, '#9FD3F5', '#FFB3C7', '#BFE3D0', '#E9B872'];
 
 function itemCount(n: number): string {
@@ -32,6 +36,22 @@ export default function KitchenHome() {
   const { household, members } = useSession();
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const reminders = useReminders();
+  const [promptDismissed, setPromptDismissed] = useState(true);
+  useEffect(() => {
+    AsyncStorage.getItem(PROMPT_KEY)
+      .then((v) => setPromptDismissed(v === '1'))
+      .catch(() => {});
+  }, []);
+  const dismissPrompt = () => {
+    setPromptDismissed(true);
+    AsyncStorage.setItem(PROMPT_KEY, '1').catch(() => {});
+  };
+  const showReminderPrompt =
+    !promptDismissed &&
+    !reminders.settings.enabled &&
+    (reminders.permission === 'undetermined' || reminders.permission === 'granted') &&
+    items.some((i) => i.expiresOn);
   const useSoon = items.filter((i) => freshness(i) !== 'fresh');
   const fridge = itemsInLocation('fridge');
   const freezer = itemsInLocation('freezer');
@@ -109,6 +129,27 @@ export default function KitchenHome() {
         </Pressable>
       )}
 
+      {showReminderPrompt && (
+        <View style={styles.promptCard}>
+          <Text style={styles.promptTitle}>Get a heads-up before food goes off?</Text>
+          <View style={styles.promptActions}>
+            <Pressable accessibilityRole="button" onPress={dismissPrompt} style={styles.promptLater}>
+              <Text style={styles.promptLaterText}>Not now</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={async () => {
+                await reminders.update({ enabled: true });
+                dismissPrompt();
+              }}
+              style={styles.promptYes}
+            >
+              <Text style={styles.promptYesText}>Turn on reminders</Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <View style={styles.wall}>
         <Text style={styles.hint}>Tap a door to open it</Text>
         <View style={styles.appliances}>
@@ -179,6 +220,27 @@ export default function KitchenHome() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  promptCard: {
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    gap: 8,
+  },
+  promptTitle: { fontFamily: fonts.bodyHeavy, fontSize: 15, color: colors.ink },
+  promptActions: { flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', gap: 12 },
+  promptLater: { minHeight: 40, justifyContent: 'center', paddingHorizontal: 6 },
+  promptLaterText: { fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.inkSoft },
+  promptYes: {
+    minHeight: 40,
+    justifyContent: 'center',
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: colors.ink,
+  },
+  promptYesText: { fontFamily: fonts.bodyHeavy, fontSize: 14, color: colors.surface },
   emptyCard: {
     backgroundColor: colors.surface,
     borderWidth: 2,

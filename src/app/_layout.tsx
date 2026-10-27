@@ -10,6 +10,7 @@ import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { KitchenProvider } from '../data/KitchenContext';
+import { RemindersProvider } from '../data/RemindersContext';
 import { SessionProvider, useSession } from '../data/SessionContext';
 import { colors } from '../theme';
 
@@ -51,8 +52,10 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <SessionProvider>
         <KitchenProvider>
-          <StatusBar style="dark" />
-          <Routes />
+          <RemindersProvider>
+            <StatusBar style="dark" />
+            <Routes />
+          </RemindersProvider>
         </KitchenProvider>
       </SessionProvider>
     </SafeAreaProvider>
