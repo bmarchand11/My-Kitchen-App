@@ -40,7 +40,8 @@
           "cameraPermission": "My Kitchen uses the camera to read barcodes and receipts so you don’t have to type them.",
           "microphonePermission": false
         }
-      ]
+      ],
+      "expo-notifications"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Alert, Platform, ScrollView, Share, StyleSheet, Text, View } from 'react-native';
 
+import { ReminderSettingsCard } from '../components/ReminderSettingsCard';
 import { Button, ErrorNote, Screen, Title } from '../components/ui';
 import { useSession } from '../data/SessionContext';
 import { colors, fonts } from '../theme';
@@ -56,6 +57,8 @@ export default function HouseholdScreen() {
             </View>
           ))}
         </View>
+
+        <ReminderSettingsCard />
 
         <Text style={styles.signedIn}>Signed in as {session?.user.email}</Text>
         <ErrorNote message={error} />
