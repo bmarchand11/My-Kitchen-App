@@ -1,11 +1,13 @@
 import { router } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 
 import { Sticker, type StickerName } from '../components/Sticker';
-import { Screen, Title } from '../components/ui';
+import { Button, ErrorNote, Screen, Title } from '../components/ui';
 import { freshness, type Item, type LocationId } from '../data/kitchen';
 import { useKitchen } from '../data/KitchenContext';
+import { useSession } from '../data/SessionContext';
 import { colors, fonts } from '../theme';
 
 function greeting(now = new Date()): string {
@@ -19,12 +21,17 @@ function previewStickers(items: Item[], count: number): StickerName[] {
   return [...new Set(items.map((i) => i.sticker))].slice(0, count);
 }
 
+const AVATAR_COLORS = [colors.sunflower, '#9FD3F5', '#FFB3C7', '#BFE3D0', '#E9B872'];
+
 function itemCount(n: number): string {
   return n === 1 ? '1 item' : `${n} items`;
 }
 
 export default function KitchenHome() {
-  const { items, itemsInLocation } = useKitchen();
+  const { items, itemsInLocation, loading, error, addSampleFood } = useKitchen();
+  const { household, members } = useSession();
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
   const useSoon = items.filter((i) => freshness(i) !== 'fresh');
   const fridge = itemsInLocation('fridge');
   const freezer = itemsInLocation('freezer');
@@ -33,19 +40,57 @@ export default function KitchenHome() {
 
   const open = (id: LocationId) => router.push(`/location/${id}`);
 
+  const loadSamples = async () => {
+    setAddError(null);
+    setAdding(true);
+    try {
+      await addSampleFood();
+    } catch (e) {
+      setAddError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAdding(false);
+    }
+  };
+
   return (
     <Screen tab="kitchen">
       <View style={styles.header}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.greeting}>{greeting()}</Text>
-          <Title>Our Kitchen</Title>
+          <Title>{household?.name ?? 'Our Kitchen'}</Title>
         </View>
-        <View style={styles.avatars}>
-          <View style={[styles.avatar, { backgroundColor: colors.sunflower }]}>
-            <Text style={styles.avatarText}>B</Text>
-          </View>
-        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={`Household: ${members.map((m) => m.display_name).join(', ')}`}
+          onPress={() => router.navigate('/household')}
+          style={styles.avatars}
+        >
+          {members.slice(0, 4).map((m, i) => (
+            <View
+              key={m.user_id}
+              style={[styles.avatar, { backgroundColor: AVATAR_COLORS[i % AVATAR_COLORS.length] }, i > 0 && { marginLeft: -8 }]}
+            >
+              <Text style={styles.avatarText}>{m.display_name.charAt(0).toUpperCase()}</Text>
+            </View>
+          ))}
+        </Pressable>
       </View>
+
+      <ErrorNote message={error} />
+
+      {loading && items.length === 0 && <ActivityIndicator color={colors.ink} />}
+
+      {!loading && items.length === 0 && (
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyTitle}>Your kitchen is empty</Text>
+          <Text style={styles.emptyBody}>
+            Add food with the + button, or load some sample food to try things out. You can use it up or throw it out
+            any time.
+          </Text>
+          <ErrorNote message={addError} />
+          <Button label="Add sample food" variant="secondary" onPress={loadSamples} busy={adding} />
+        </View>
+      )}
 
       {useSoon.length > 0 && (
         <Pressable accessibilityRole="button" onPress={() => router.navigate('/list')} style={styles.soonCard}>
@@ -133,7 +178,17 @@ export default function KitchenHome() {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  emptyCard: {
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 18,
+    padding: 14,
+    gap: 8,
+  },
+  emptyTitle: { fontFamily: fonts.bodyHeavy, fontSize: 16, color: colors.ink },
+  emptyBody: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.inkSoft },
   greeting: { fontFamily: fonts.bodyBold, fontSize: 13, color: colors.inkQuiet },
   avatars: { flexDirection: 'row' },
   avatar: {

@@ -1,6 +1,16 @@
 import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+  type StyleProp,
+  type TextInputProps,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path, Rect } from 'react-native-svg';
 
@@ -55,6 +65,62 @@ export function Pill({ label, onPress }: { label: string; onPress: () => void })
     <Pressable accessibilityRole="button" onPress={onPress} style={styles.pill}>
       <Text style={styles.pillText}>{label}</Text>
     </Pressable>
+  );
+}
+
+export function Field({ label, ...input }: { label: string } & TextInputProps) {
+  return (
+    <View style={{ gap: 4 }}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <TextInput
+        accessibilityLabel={label}
+        placeholderTextColor={colors.inkQuiet}
+        style={styles.field}
+        {...input}
+      />
+    </View>
+  );
+}
+
+export function Button({
+  label,
+  onPress,
+  busy = false,
+  variant = 'primary',
+}: {
+  label: string;
+  onPress: () => void;
+  busy?: boolean;
+  variant?: 'primary' | 'secondary';
+}) {
+  const primary = variant === 'primary';
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ busy, disabled: busy }}
+      disabled={busy}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.button,
+        { backgroundColor: primary ? colors.ink : colors.surface },
+        (pressed || busy) && { opacity: 0.7 },
+      ]}
+    >
+      {busy ? (
+        <ActivityIndicator color={primary ? colors.surface : colors.ink} />
+      ) : (
+        <Text style={[styles.buttonText, { color: primary ? colors.surface : colors.ink }]}>{label}</Text>
+      )}
+    </Pressable>
+  );
+}
+
+export function ErrorNote({ message }: { message: string | null }) {
+  if (!message) return null;
+  return (
+    <View style={styles.error} accessibilityLiveRegion="polite">
+      <Text style={styles.errorText}>{message}</Text>
+    </View>
   );
 }
 
@@ -175,6 +241,36 @@ const styles = StyleSheet.create({
     paddingVertical: 1,
   },
   chipText: { fontFamily: fonts.bodyHeavy, fontSize: 11 },
+  fieldLabel: { fontFamily: fonts.bodyHeavy, fontSize: 13, color: colors.inkSoft },
+  field: {
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontFamily: fonts.bodyBold,
+    fontSize: 16,
+    color: colors.ink,
+  },
+  button: {
+    minHeight: 52,
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+  },
+  buttonText: { fontFamily: fonts.bodyHeavy, fontSize: 16 },
+  error: {
+    backgroundColor: colors.expired,
+    borderWidth: 2,
+    borderColor: colors.ink,
+    borderRadius: 14,
+    padding: 12,
+  },
+  errorText: { fontFamily: fonts.bodyBold, fontSize: 14, color: colors.expiredText },
   bar: { backgroundColor: colors.surface, borderTopWidth: 2, borderTopColor: colors.ink },
   barRow: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'center', paddingTop: 8, paddingBottom: 4 },
   tab: { alignItems: 'center', justifyContent: 'center', gap: 2, minWidth: 64, minHeight: 48 },
