@@ -1,0 +1,32 @@
+export const colors = {
+  ink: '#1F2A44',
+  inkSoft: '#3E4A63',
+  inkQuiet: '#55627A',
+  background: '#F4F7FB',
+  surface: '#FFFFFF',
+  kitchenWall: '#E3ECF6',
+  fridge: '#F8FBFF',
+  freezer: '#EAF5FF',
+  fridgeInside: '#EAF5FF',
+  freezerInside: '#D6EBFA',
+  glassShelf: '#9FC4E8',
+  drawer: '#D7ECDF',
+  pantry: '#F2C28B',
+  pantryInside: '#FBEBD6',
+  pantryShelf: '#C98B4A',
+  pantryText: '#4A2F12',
+  sunflower: '#FFC845',
+  tomato: '#FF6B4A',
+  useSoon: '#FFE7A3',
+  useSoonText: '#5C4300',
+  expired: '#FFD9D2',
+  expiredText: '#A3260F',
+  divider: '#E3ECF6',
+};
+
+export const fonts = {
+  display: 'Baloo2_800ExtraBold',
+  body: 'Nunito_600SemiBold',
+  bodyBold: 'Nunito_700Bold',
+  bodyHeavy: 'Nunito_800ExtraBold',
+};
