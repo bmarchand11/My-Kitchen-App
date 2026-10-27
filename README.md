@@ -33,6 +33,18 @@ Receipt reading uses `expo-text-extractor`, which isn't part of Expo Go, so it n
 
 Reminders are local notifications scheduled on each phone for the next 14 days, rebuilt whenever the kitchen's food changes, so a phone that hasn't opened the app picks up other members' changes the next time it does.
 
+## Installing on an iPhone
+
+The **Build for TestFlight** workflow (`.github/workflows/testflight.yml`) builds the app with EAS and uploads it to TestFlight. Run it from the Actions tab with **Run workflow**.
+
+One-time setup (the step-by-step guide is the "Put My Kitchen on your iPhone" doc):
+
+- An Apple Developer account, the app ID `com.bmarchand.mykitchen`, and the app created in App Store Connect
+- Repository secrets: `EXPO_TOKEN`, `ASC_API_KEY_P8` (the full .p8 text), `ASC_KEY_ID`, `ASC_ISSUER_ID`, `APPLE_TEAM_ID`
+- Repository variable: `ASC_APP_ID` (the app's numeric Apple ID), and optionally `APPLE_TEAM_TYPE` if the account isn't an individual one
+
+Build numbers go up automatically (`appVersionSource: remote` in `eas.json`).
+
 ## Code layout
 
 - `src/app/` holds the screens (Expo Router: every file is a screen)
