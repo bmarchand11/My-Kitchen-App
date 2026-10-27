@@ -34,6 +34,44 @@ export type Database = {
           },
         ];
       };
+      household_products: {
+        Row: {
+          barcode: string;
+          household_id: string;
+          name: string;
+          section_id: string;
+          sticker: string;
+          unit: string;
+          updated_at: string;
+        };
+        Insert: {
+          barcode: string;
+          household_id: string;
+          name: string;
+          section_id: string;
+          sticker: string;
+          unit?: string;
+          updated_at?: string;
+        };
+        Update: {
+          barcode?: string;
+          household_id?: string;
+          name?: string;
+          section_id?: string;
+          sticker?: string;
+          unit?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'household_products_household_id_fkey';
+            columns: ['household_id'];
+            isOneToOne: false;
+            referencedRelation: 'households';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       households: {
         Row: {
           created_at: string;
@@ -63,6 +101,7 @@ export type Database = {
           added_by: string | null;
           added_by_name: string;
           added_on: string;
+          barcode: string | null;
           created_at: string;
           expires_on: string | null;
           household_id: string;
@@ -78,6 +117,7 @@ export type Database = {
           added_by?: string | null;
           added_by_name?: string;
           added_on?: string;
+          barcode?: string | null;
           created_at?: string;
           expires_on?: string | null;
           household_id: string;
@@ -93,6 +133,7 @@ export type Database = {
           added_by?: string | null;
           added_by_name?: string;
           added_on?: string;
+          barcode?: string | null;
           created_at?: string;
           expires_on?: string | null;
           household_id?: string;
