@@ -1,0 +1,65 @@
+# Publishes the app's latest code so it opens in Expo Go (free, from the App Store) on an iPhone or iPad.
+# Run it from the repository's Actions tab: "Publish to Expo Go" → "Run workflow".
+# Needs only the EXPO_TOKEN secret. The README's "Trying it in Expo Go" section has the steps.
+name: Publish to Expo Go
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Check the setup is complete
+        run: |
+          if [ -z "$EXPO_TOKEN" ]; then
+            echo "::error::Still needed in Settings → Secrets and variables → Actions: secret EXPO_TOKEN"
+            exit 1
+          fi
+
+      # expo-updates is only needed to publish, so it isn't added to the app itself (keeps the TestFlight build unchanged).
+      - name: Install
+        run: |
+          npm ci
+          npm install --no-save "expo-updates@$(node -p "require('expo/bundledNativeModules.json')['expo-updates']")"
+
+      - name: Link the Expo project
+        run: npx --yes eas-cli@25.3.0 init --non-interactive --force
+
+      # Expo Go only opens updates whose runtime version names its SDK, e.g. exposdk:58.0.0.
+      - name: Set up updates for Expo Go
+        run: |
+          project_id=$(jq -r '.expo.extra.eas.projectId' app.json)
+          sdk=$(node -p "require('expo/package.json').version.split('.')[0]")
+          jq --arg url "https://u.expo.dev/$project_id" --arg rv "exposdk:$sdk.0.0" \
+            '.expo.updates.url = $url | .expo.runtimeVersion = $rv' app.json > app.json.tmp
+          mv app.json.tmp app.json
+          echo "PROJECT_ID=$project_id" >> "$GITHUB_ENV"
+
+      - name: Publish
+        run: npx --yes eas-cli@25.3.0 update --channel expo-go --platform ios --message "${{ github.sha }}" --non-interactive
+
+      - name: Show how to open it
+        run: |
+          link="exp://u.expo.dev/$PROJECT_ID?channel-name=expo-go"
+          echo "Open in Expo Go: $link"
+          {
+            echo "## Open My Kitchen in Expo Go"
+            echo
+            echo "In Expo Go, sign in with your Expo account and open **my-kitchen-app** under Projects."
+            echo "Or copy this link into Safari on your iPhone or iPad:"
+            echo
+            echo '```'
+            echo "$link"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
