@@ -33,6 +33,12 @@ Receipt reading uses `expo-text-extractor`, which isn't part of Expo Go, so it n
 
 Reminders are local notifications scheduled on each phone for the next 14 days, rebuilt whenever the kitchen's food changes, so a phone that hasn't opened the app picks up other members' changes the next time it does.
 
+## Trying it in Expo Go
+
+The **Publish to Expo Go** workflow (`.github/workflows/expo-go.yml`) publishes the latest code as an EAS Update that the free Expo Go app opens on an iPhone or iPad, with no Apple developer account. It only needs the `EXPO_TOKEN` secret. After it runs, sign in to Expo Go with the same Expo account and open the project, or use the link in the run's summary.
+
+Receipt photo reading doesn't work in Expo Go (the receipt screen offers pasting the text instead). Everything else does.
+
 ## Installing on an iPhone
 
 The **Build for TestFlight** workflow (`.github/workflows/testflight.yml`) builds the app with EAS and uploads it to TestFlight. Run it from the Actions tab with **Run workflow**.
